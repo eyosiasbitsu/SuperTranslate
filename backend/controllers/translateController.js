@@ -41,6 +41,22 @@ const translateText = async (req, res) => {
     //   satisfaction: googleAutoMLSatisfaction
     // });
 
+    translations.push(
+      {
+        "model": "google_cloud",
+        "translated_text": "Bonjour, comment ça va?",
+        "satisfaction": "Very Satisfied"
+      }
+    );
+
+    translations.push(
+      {
+        "model": "google_automl",
+        "translated_text": "Bonjour, comment ça va?",
+        "satisfaction": "Very Satisfied"
+      }
+    );
+    
     res.json(translations);
   } catch (error) {
     console.error('Error during translation:', error);
