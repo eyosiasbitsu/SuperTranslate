@@ -2,34 +2,46 @@
 const axios = require('axios');
 const dotenv = require('dotenv');
 const path = require('path');
-const { getLanguageCode } = require('../utils/languageMapperService'); // Use OpenAI for language mapping
+const { getLanguageCodeForDeepL } = require('../utils/languageMapperService'); // Import DeepL-specific mapper
 
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
+// Ensure you use the pro endpoint if your account is DeepL API Pro
 const deeplApiKey = process.env.DEEPL_API_KEY;
-const deeplEndpoint = "https://api-free.deepl.com/v2/translate"; // Use "https://api.deepl.com/v2/translate" for pro accounts
+const deeplEndpoint = "https://api.deepl.com/v2/translate"; // Use pro endpoint
+
+// List of DeepL-supported languages
+const deeplSupportedLanguages = [
+  'AR', 'BG', 'CS', 'DA', 'DE', 'EL', 'EN', 'ES', 'ET', 'FI', 'FR', 'HU', 'ID', 'IT', 'JA',
+  'KO', 'LT', 'LV', 'NB', 'NL', 'PL', 'PT', 'RO', 'RU', 'SK', 'SL', 'SV', 'TR', 'UK', 'ZH'
+];
 
 const deeplTranslateText = async (text, targetLanguage) => {
   try {
-    // Get ISO language code using OpenAI
-    const targetLanguageCode = await getLanguageCode(targetLanguage);
+    // Get DeepL-compatible language code
+    const targetLanguageCode = await getLanguageCodeForDeepL(targetLanguage);
+
+    // Check if the language code is supported by DeepL
+    if (!deeplSupportedLanguages.includes(targetLanguageCode)) {
+      return `The language "${targetLanguage}" is not supported by DeepL.`;
+    }
+
+    console.log('Target language code for DeepL:', targetLanguageCode);
 
     const response = await axios.post(
       deeplEndpoint,
-      null, // No body required, only params
+      {
+        text: [text], // Send text as an array according to DeepL requirements
+        target_lang: targetLanguageCode, // Use uppercase language code
+      },
       {
         headers: {
           'Authorization': `DeepL-Auth-Key ${deeplApiKey}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
         },
-        params: {
-          text: text,
-          target_lang: targetLanguageCode.toUpperCase(), // DeepL uses uppercase language codes
-        }
       }
     );
 
-    // Extract the translated text from the response
     const translatedText = response.data.translations[0].text;
     return translatedText;
   } catch (error) {
@@ -39,5 +51,5 @@ const deeplTranslateText = async (text, targetLanguage) => {
 };
 
 module.exports = {
-    deeplTranslateText,
+  deeplTranslateText,
 };

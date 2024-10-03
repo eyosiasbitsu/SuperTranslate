@@ -1,4 +1,4 @@
-
+// utils/languageMapperService.js
 const OpenAIApi = require("openai");
 const dotenv = require("dotenv");
 const path = require('path');
@@ -11,12 +11,21 @@ const openai = new OpenAIApi({
   apiKey: apiKey,
 });
 
-const getLanguageCode = async (languageName) => {
+const getLanguageCodeForPrompt = async (languageName, targetService) => {
   try {
-    const prompt = `Provide the ISO 639-1 language code for the language "${languageName}". Ensure that your response is only the two-letter language code, without any additional text or explanation.`;
+    // Customize the prompt for different services
+    let prompt = '';
+
+    if (targetService === 'azure') {
+      prompt = `Provide the ISO 639-1 language code for the language "${languageName}". Ensure that your response is only the lowercase language code, without any additional text or explanation.`;
+    } else if (targetService === 'deepl') {
+      prompt = `Provide the correct language code for the language "${languageName}" that is supported by DeepL. Ensure that your response is only the capital letter language code, without any additional text or explanation.`;
+    } else {
+      throw new Error('Invalid target service specified.');
+    }
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4', 
+      model: 'gpt-4',
       messages: [
         {
           role: "user",
@@ -29,8 +38,9 @@ const getLanguageCode = async (languageName) => {
 
     const languageCode = response.choices[0].message.content.trim();
 
+    // Ensure the response is a valid two-letter code
     if (languageCode.length === 2) {
-      return languageCode.toLowerCase();
+      return languageCode;
     } else {
       console.error(`Unexpected response for language code: ${languageCode}`);
       throw new Error(`Could not determine ISO code for: ${languageName}`);
@@ -41,6 +51,17 @@ const getLanguageCode = async (languageName) => {
   }
 };
 
+// Function for getting language code for Azure
+const getLanguageCodeForAzure = async (languageName) => {
+  return await getLanguageCodeForPrompt(languageName, 'azure');
+};
+
+// Function for getting language code for DeepL
+const getLanguageCodeForDeepL = async (languageName) => {
+  return (await getLanguageCodeForPrompt(languageName, 'deepl')).toUpperCase(); // DeepL requires uppercase codes
+};
+
 module.exports = {
-  getLanguageCode,
+  getLanguageCodeForAzure,
+  getLanguageCodeForDeepL,
 };

@@ -2,7 +2,7 @@
 const axios = require('axios');
 const dotenv = require("dotenv");
 const path = require('path');
-const { getLanguageCode } = require('../utils/languageMapperService');
+const { getLanguageCodeForAzure } = require('../utils/languageMapperService');
 
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
@@ -13,7 +13,7 @@ const region = process.env.AZURE_REGION;
 const azureTranslateText = async (text, targetLanguage) => {
   try {
 
-    const targetLanguageCode = await getLanguageCode(targetLanguage);
+    const targetLanguageCode = await getLanguageCodeForAzure(targetLanguage);
 
     const response = await axios.post(
       `${endpoint}/translate`,

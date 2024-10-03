@@ -44,7 +44,7 @@ const translateText = async (req, res) => {
     // Send the response
     res.json(translations);
   } catch (error) {
-    console.error('Error during translation:', error);
+    console.error('Error during translation:', error.message);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
