@@ -1,4 +1,4 @@
-// controllers/translateController.js
+
 const openaiService = require('../services/openaiService');
 const { azureTranslateText } = require('../services/azureTranslateService');
 const { rateTranslation } = require('../utils/accuracyCalculator');
@@ -31,13 +31,13 @@ const translateText = async (req, res) => {
       satisfaction: azureSatisfaction
     });
 
+    // Dummy data for the third translator model
     translations.push({
       model: 'google_automl',
       translation: "Bonjour, comment ça va?",
       satisfaction: "Very Satisfied"
     });
 
-    // Send the response
     res.json(translations);
   } catch (error) {
     console.error('Error during translation:', error);
