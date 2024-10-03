@@ -1,4 +1,4 @@
-// utils/languageMapperService.js
+
 const OpenAIApi = require("openai");
 const dotenv = require("dotenv");
 const path = require('path');
@@ -29,7 +29,6 @@ const getLanguageCode = async (languageName) => {
 
     const languageCode = response.choices[0].message.content.trim();
 
-    // Ensure the response is a two-letter code (basic validation)
     if (languageCode.length === 2) {
       return languageCode.toLowerCase();
     } else {
