@@ -2,8 +2,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const translateRoutes = require('./routes/translateRoutes');
+const cors = require('cors');
 
 const app = express();
+
+app.use(cors({ origin: '*' }));
 
 app.use(bodyParser.json());
 
