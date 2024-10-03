@@ -1,7 +1,6 @@
-
+// controllers/translateController.js
 const openaiService = require('../services/openaiService');
-const googleTranslateService = require('../services/googleTranslateService');
-const googleAutoMLService = require('../services/googleAutoMLService');
+const { azureTranslateText } = require('../services/azureTranslateService');
 const { rateTranslation } = require('../utils/accuracyCalculator');
 
 const translateText = async (req, res) => {
@@ -23,40 +22,22 @@ const translateText = async (req, res) => {
       satisfaction: openaiSatisfaction
     });
 
-    // // Google Cloud Translate API
-    // const googleTranslate = await googleTranslateService.translate(text, source_language, target_languages);
-    // const googleTranslateSatisfaction = await rateTranslation(text, source_language, googleTranslate, target_languages[0]);
-    // translations.push({
-    //   model: 'google_cloud',
-    //   translation: googleTranslate,
-    //   satisfaction: googleTranslateSatisfaction
-    // });
+    // Azure Translation
+    const azureTranslation = await azureTranslateText(text, target_language);
+    const azureSatisfaction = await rateTranslation(text, source_language, azureTranslation, target_language);
+    translations.push({
+      model: 'azure_translator',
+      translation: azureTranslation,
+      satisfaction: azureSatisfaction
+    });
 
-    // Google AutoML Translation
-    // const googleAutoMLTranslation = await googleAutoMLService.translate(text, source_language, target_languages);
-    // const googleAutoMLSatisfaction = await rateTranslation(text, source_language, googleAutoMLTranslation, target_languages[0]);
-    // translations.push({
-    //   model: 'google_automl',
-    //   translation: googleAutoMLTranslation,
-    //   satisfaction: googleAutoMLSatisfaction
-    // });
+    translations.push({
+      model: 'google_automl',
+      translation: "Bonjour, comment ça va?",
+      satisfaction: "Very Satisfied"
+    });
 
-    translations.push(
-      {
-        "model": "google_cloud",
-        "translation": "Bonjour, comment ça va?",
-        "satisfaction": "Very Satisfied"
-      }
-    );
-
-    translations.push(
-      {
-        "model": "google_automl",
-        "translation": "Bonjour, comment ça va?",
-        "satisfaction": "Very Satisfied"
-      }
-    );
-
+    // Send the response
     res.json(translations);
   } catch (error) {
     console.error('Error during translation:', error);
@@ -66,4 +47,4 @@ const translateText = async (req, res) => {
 
 module.exports = {
   translateText,
-}
+};
