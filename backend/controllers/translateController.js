@@ -1,6 +1,7 @@
-
-const openaiService = require('../services/openaiService');
+// controllers/translateController.js
+const { openaiTranslate } = require('../services/openaiService');
 const { azureTranslateText } = require('../services/azureTranslateService');
+const { deeplTranslateText } = require('../services/deeplService');
 const { rateTranslation } = require('../utils/accuracyCalculator');
 
 const translateText = async (req, res) => {
@@ -14,7 +15,7 @@ const translateText = async (req, res) => {
     const translations = [];
 
     // OpenAI Translation
-    const openaiTranslation = await openaiService.translate(text, source_language, target_language);
+    const openaiTranslation = await openaiTranslate(text, source_language, target_language);
     const openaiSatisfaction = await rateTranslation(text, source_language, openaiTranslation, target_language);
     translations.push({
       model: 'openai',
@@ -23,7 +24,7 @@ const translateText = async (req, res) => {
     });
 
     // Azure Translation
-    const azureTranslation = await azureTranslateText(text, target_language);
+    const azureTranslation = await azureTranslateText(text, target_language); // Pass the target language name
     const azureSatisfaction = await rateTranslation(text, source_language, azureTranslation, target_language);
     translations.push({
       model: 'azure_translator',
@@ -31,13 +32,16 @@ const translateText = async (req, res) => {
       satisfaction: azureSatisfaction
     });
 
-    // Dummy data for the third translator model
+    // DeepL Translation
+    const deeplTranslation = await deeplTranslateText(text, target_language);
+    const deeplSatisfaction = await rateTranslation(text, source_language, deeplTranslation, target_language);
     translations.push({
-      model: 'google_automl',
-      translation: "Bonjour, comment ça va?",
-      satisfaction: "Very Satisfied"
+      model: 'deepl',
+      translation: deeplTranslation,
+      satisfaction: deeplSatisfaction
     });
 
+    // Send the response
     res.json(translations);
   } catch (error) {
     console.error('Error during translation:', error);

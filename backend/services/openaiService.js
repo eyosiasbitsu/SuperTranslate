@@ -11,7 +11,7 @@ const openai = new OpenAIApi({
   apiKey: apiKey,
 });
 
-const translate = async (text, source_language, target_language) => {
+const openaiTranslate = async (text, source_language, target_language) => {
   try {
 
     const prompt = `Translate the following text from ${source_language} to ${target_language}: "${text}"`;
@@ -37,5 +37,5 @@ const translate = async (text, source_language, target_language) => {
 };
 
 module.exports = {
-  translate,
+  openaiTranslate,
 };
