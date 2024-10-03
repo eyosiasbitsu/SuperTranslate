@@ -44,7 +44,7 @@ const translateText = async (req, res) => {
     translations.push(
       {
         "model": "google_cloud",
-        "translated_text": "Bonjour, comment ça va?",
+        "translation": "Bonjour, comment ça va?",
         "satisfaction": "Very Satisfied"
       }
     );
@@ -52,7 +52,7 @@ const translateText = async (req, res) => {
     translations.push(
       {
         "model": "google_automl",
-        "translated_text": "Bonjour, comment ça va?",
+        "translation": "Bonjour, comment ça va?",
         "satisfaction": "Very Satisfied"
       }
     );
