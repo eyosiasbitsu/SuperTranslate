@@ -57,7 +57,7 @@ export default function Home() {
 
           {/* Third Column */}
           <div className="flex flex-col gap-4 w-full max-w-xs">
-            <TranslateResponseCard className="w-full" service="Google automl response" accuracy={Array.isArray(translations) && translations.length > 2? translations[2].satisfaction:""} />
+            <TranslateResponseCard className="w-full" service="DeepL Model" accuracy={Array.isArray(translations) && translations.length > 2? translations[2].satisfaction:""} />
             {Array.isArray(translations) && translations.length > 2 && (
               <TranslateResultCard className="w-full min-h-24" result={translations[2].translation} />
             )}

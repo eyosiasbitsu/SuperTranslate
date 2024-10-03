@@ -16,7 +16,7 @@ const TranslateResponseCard: React.FC<TranslateResponseCardProps> = ({ service, 
         </div>
       </div>
       <h2 className="text-lg font-semibold text-gray-900">{service}</h2>
-      <p className="text-sm text-gray-500 underline underline-offset-1">{accuracy} Accuracy</p>
+      <p className="text-sm text-gray-500 underline underline-offset-1">{accuracy}</p>
     </div>
   );
 };
