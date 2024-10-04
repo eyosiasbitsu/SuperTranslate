@@ -1,28 +1,30 @@
-
 const { TranslationServiceClient } = require('@google-cloud/translate').v3;
-const path = require('path');
 const { getLanguageCodeForGoogle } = require('../utils/languageMapperService');
 const dotenv = require('dotenv');
+const path = require('path');
 
+// Load environment variables
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
-process.env.GOOGLE_APPLICATION_CREDENTIALS = path.join(__dirname, '../utils/supertranslate.json');
-
+// Initialize Google Cloud Translation client
 const translationClientV3 = new TranslationServiceClient();
 const googleProjectId = process.env.GOOGLE_CLOUD_PROJECT_ID;
 const location = 'global';
 
 const googleTranslateTextV3 = async (text, targetLanguage) => {
   try {
+    // Get language code for Google
     const targetLanguageCode = await getLanguageCodeForGoogle(targetLanguage);
 
+    // Construct translation request
     const request = {
       parent: `projects/${googleProjectId}/locations/${location}`,
       contents: [text],
-      mimeType: 'text/plain',
+      mimeType: 'text/plain', // Mime type of the input text
       targetLanguageCode,
     };
 
+    // Perform translation
     const [response] = await translationClientV3.translateText(request);
     const translatedText = response.translations[0].translatedText;
     return translatedText;

@@ -61,7 +61,25 @@ export default function Home() {
             {Array.isArray(translations) && translations.length > 2 && (
               <TranslateResultCard className="w-full min-h-24" result={translations[2].translation} />
             )}
+
           </div>
+          
+          <div className="flex flex-col gap-4 w-full max-w-xs">
+            <TranslateResponseCard className="w-full" service="Google Translate V2" accuracy={Array.isArray(translations) && translations.length > 3? translations[3].satisfaction:""} />
+            {Array.isArray(translations) && translations.length > 3 && (
+              <TranslateResultCard className="w-full min-h-24" result={translations[3].translation} />
+            )}
+
+          </div>
+
+          <div className="flex flex-col gap-4 w-full max-w-xs">
+            <TranslateResponseCard className="w-full" service="Google Translate V3" accuracy={Array.isArray(translations) && translations.length > 4? translations[4].satisfaction:""} />
+            {Array.isArray(translations) && translations.length > 4 && (
+              <TranslateResultCard className="w-full min-h-24" result={translations[4].translation} />
+            )}
+
+          </div>
+          
         </div>
       </main>
 
