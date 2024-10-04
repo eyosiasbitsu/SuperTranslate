@@ -24,6 +24,7 @@ const googleTranslateTextV2 = async (text, targetLanguage) => {
   }
 };
 
+
 module.exports = {
   googleTranslateTextV2,
 };
