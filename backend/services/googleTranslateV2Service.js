@@ -1,10 +1,9 @@
 const { Translate } = require('@google-cloud/translate').v2;
 const { getLanguageCodeForGoogle } = require('../utils/languageMapperService');
 const dotenv = require('dotenv');
-const path = require('path');
 
 // Load environment variables
-dotenv.config({ path: path.join(__dirname, '../../.env') });
+dotenv.config();
 
 // Initialize Google Cloud Translate client
 const translateV2 = new Translate();
