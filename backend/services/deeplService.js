@@ -1,16 +1,14 @@
-// services/deeplService.js
+
 const axios = require('axios');
 const dotenv = require('dotenv');
 const path = require('path');
-const { getLanguageCodeForDeepL } = require('../utils/languageMapperService'); // Import DeepL-specific mapper
+const { getLanguageCodeForDeepL } = require('../utils/languageMapperService'); 
 
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
-// Ensure you use the pro endpoint if your account is DeepL API Pro
 const deeplApiKey = process.env.DEEPL_API_KEY;
-const deeplEndpoint = "https://api.deepl.com/v2/translate"; // Use pro endpoint
+const deeplEndpoint = "https://api.deepl.com/v2/translate";
 
-// List of DeepL-supported languages
 const deeplSupportedLanguages = [
   'AR', 'BG', 'CS', 'DA', 'DE', 'EL', 'EN', 'ES', 'ET', 'FI', 'FR', 'HU', 'ID', 'IT', 'JA',
   'KO', 'LT', 'LV', 'NB', 'NL', 'PL', 'PT', 'RO', 'RU', 'SK', 'SL', 'SV', 'TR', 'UK', 'ZH'
@@ -18,10 +16,8 @@ const deeplSupportedLanguages = [
 
 const deeplTranslateText = async (text, targetLanguage) => {
   try {
-    // Get DeepL-compatible language code
     const targetLanguageCode = await getLanguageCodeForDeepL(targetLanguage);
 
-    // Check if the language code is supported by DeepL
     if (!deeplSupportedLanguages.includes(targetLanguageCode)) {
       return `The language "${targetLanguage}" is not supported by DeepL.`;
     }
@@ -31,8 +27,8 @@ const deeplTranslateText = async (text, targetLanguage) => {
     const response = await axios.post(
       deeplEndpoint,
       {
-        text: [text], // Send text as an array according to DeepL requirements
-        target_lang: targetLanguageCode, // Use uppercase language code
+        text: [text],
+        target_lang: targetLanguageCode,
       },
       {
         headers: {

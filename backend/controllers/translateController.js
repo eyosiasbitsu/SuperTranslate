@@ -1,7 +1,9 @@
-// controllers/translateController.js
+
 const { openaiTranslate } = require('../services/openaiService');
 const { azureTranslateText } = require('../services/azureTranslateService');
 const { deeplTranslateText } = require('../services/deeplService');
+const { googleTranslateTextV2 } = require('../services/googleTranslateV2Service');
+const { googleTranslateTextV3 } = require('../services/googleTranslateV3Service');
 const { rateTranslation } = require('../utils/accuracyCalculator');
 
 const translateText = async (req, res) => {
@@ -24,7 +26,7 @@ const translateText = async (req, res) => {
     });
 
     // Azure Translation
-    const azureTranslation = await azureTranslateText(text, target_language); // Pass the target language name
+    const azureTranslation = await azureTranslateText(text, target_language);
     const azureSatisfaction = await rateTranslation(text, source_language, azureTranslation, target_language);
     translations.push({
       model: 'azure_translator',
@@ -40,6 +42,42 @@ const translateText = async (req, res) => {
       translation: deeplTranslation,
       satisfaction: deeplSatisfaction
     });
+
+    // Google Cloud Translate v2
+    try {
+      const googleV2Translation = await googleTranslateTextV2(text, target_language);
+      const googleV2Satisfaction = await rateTranslation(text, source_language, googleV2Translation, target_language);
+      translations.push({
+        model: 'google_translate_v2',
+        translation: googleV2Translation,
+        satisfaction: googleV2Satisfaction
+      });
+    } catch (error) {
+      console.error('Error in Google Translate v2:', error.message);
+      translations.push({
+        model: 'google_translate_v2',
+        translation: 'Error in translation',
+        satisfaction: 'N/A'
+      });
+    }
+
+    // Google Cloud Translate v3
+    try {
+      const googleV3Translation = await googleTranslateTextV3(text, target_language);
+      const googleV3Satisfaction = await rateTranslation(text, source_language, googleV3Translation, target_language);
+      translations.push({
+        model: 'google_translate_v3',
+        translation: googleV3Translation,
+        satisfaction: googleV3Satisfaction
+      });
+    } catch (error) {
+      console.error('Error in Google Translate v3:', error.message);
+      translations.push({
+        model: 'google_translate_v3',
+        translation: 'Error in translation',
+        satisfaction: 'N/A'
+      });
+    }
 
     // Send the response
     res.json(translations);
