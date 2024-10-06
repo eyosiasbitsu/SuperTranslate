@@ -6,6 +6,12 @@ const { googleTranslateTextV2 } = require('../services/googleTranslateV2Service'
 const { googleTranslateTextV3 } = require('../services/googleTranslateV3Service');
 const { rateTranslation } = require('../utils/accuracyCalculator');
 
+const { 
+  getLanguageCodeForAzure, 
+  getLanguageCodeForDeepL, 
+  getLanguageCodeForGoogle 
+} = require('../utils/languageMapperService');
+
 const translateText = async (req, res) => {
   try {
     const { text, source_language, target_language } = req.body;
