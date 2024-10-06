@@ -88,15 +88,32 @@ const translateText = async (req, res) => {
 };
 
 const translateTextByModel = async (req, res) => {
+  
   const modelMap = {
-    "openai": openaiTranslate,
-    "azure": azureTranslateText,
-    "deepl": deeplTranslateText,
-    "google_v2": googleTranslateTextV2,
-    "google_v3": googleTranslateTextV3,
+    "openai": {
+      translate: openaiTranslate,
+      getLanguageCode: (language) => Promise.resolve(language)
+    },
+    "azure": {
+      translate: azureTranslateText,
+      getLanguageCode: getLanguageCodeForAzure
+    },
+    "deepl": {
+      translate: deeplTranslateText,
+      getLanguageCode: getLanguageCodeForDeepL
+    },
+    "google_v2": {
+      translate: googleTranslateTextV2,
+      getLanguageCode: getLanguageCodeForGoogle
+    },
+    "google_v3": {
+      translate: googleTranslateTextV3,
+      getLanguageCode: getLanguageCodeForGoogle
+    }
   };
 
   const supportedModels = new Set(Object.keys(modelMap));
+  
   try {
     const { model, text, source_language, target_language } = req.body;
 
@@ -108,14 +125,18 @@ const translateTextByModel = async (req, res) => {
       return res.status(400).json({ message: 'Unsupported model specified.' });
     }
 
-    const translateFunction = modelMap[model];
+    const { translate: translateFunction, getLanguageCode } = modelMap[model];
 
-    const translation = await translateFunction(text, target_language);
-    const satisfaction = await rateTranslation(text, source_language, translation, target_language);
+    const targetLanguageCode = await getLanguageCode(target_language);
+
+    const translation = await translateFunction(text, targetLanguageCode);
+
+    const satisfaction = await rateTranslation(text, source_language, translation, targetLanguageCode);
 
     res.json({
       model,
-      translation
+      translation,
+      satisfaction
     });
   } catch (error) {
     console.error('Error during translation:', error.message);
