@@ -88,32 +88,16 @@ const translateText = async (req, res) => {
 };
 
 const translateTextByModel = async (req, res) => {
-  
   const modelMap = {
-    "openai": {
-      translate: openaiTranslate,
-      getLanguageCode: (language) => Promise.resolve(language)
-    },
-    "azure": {
-      translate: azureTranslateText,
-      getLanguageCode: getLanguageCodeForAzure
-    },
-    "deepl": {
-      translate: deeplTranslateText,
-      getLanguageCode: getLanguageCodeForDeepL
-    },
-    "google_v2": {
-      translate: googleTranslateTextV2,
-      getLanguageCode: getLanguageCodeForGoogle
-    },
-    "google_v3": {
-      translate: googleTranslateTextV3,
-      getLanguageCode: getLanguageCodeForGoogle
-    }
+    "openai": openaiTranslate,
+    "azure": azureTranslateText,
+    "deepl": deeplTranslateText,
+    "google_v2": googleTranslateTextV2,
+    "google_v3": googleTranslateTextV3,
   };
 
   const supportedModels = new Set(Object.keys(modelMap));
-  
+
   try {
     const { model, text, source_language, target_language } = req.body;
 
@@ -125,13 +109,21 @@ const translateTextByModel = async (req, res) => {
       return res.status(400).json({ message: 'Unsupported model specified.' });
     }
 
-    const { translate: translateFunction, getLanguageCode } = modelMap[model];
+    let correctedLanguageCode;
+    if (model === "azure") {
+      correctedLanguageCode = await getLanguageCodeForAzure(target_language);
+    } else if (model === "deepl") {
+      correctedLanguageCode = await getLanguageCodeForDeepL(target_language);
+    } else if (model === "google_v2" || model === "google_v3") {
+      correctedLanguageCode = await getLanguageCodeForGoogle(target_language);
+    } else {
+      correctedLanguageCode = target_language;
+    }
 
-    const targetLanguageCode = await getLanguageCode(target_language);
+    const translateFunction = modelMap[model];
 
-    const translation = await translateFunction(text, targetLanguageCode);
-
-    const satisfaction = await rateTranslation(text, source_language, translation, targetLanguageCode);
+    const translation = await translateFunction(text, correctedLanguageCode);
+    const satisfaction = await rateTranslation(text, source_language, translation, target_language);
 
     res.json({
       model,
