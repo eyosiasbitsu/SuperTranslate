@@ -105,16 +105,19 @@ const translateTextByModel = async (req, res) => {
   const supportedModels = new Set(Object.keys(modelMap));
 
   try {
-    const { model, text, source_language, target_language } = req.body;
+    const { model, texts, source_language, target_language } = req.body;
 
-    if (!model || !text || !target_language) {
-      return res.status(400).json({ message: 'Model, text, and target_language are required fields.' });
+    // Validate required fields
+    if (!model || !texts || !target_language || !Array.isArray(texts) || texts.length === 0) {
+      return res.status(400).json({ message: 'Model, texts (as a non-empty array), and target_language are required fields.' });
     }
 
+    // Validate model
     if (!supportedModels.has(model)) {
       return res.status(400).json({ message: 'Unsupported model specified.' });
     }
 
+    // Validate and correct the language code
     let correctedLanguageCode;
     if (model === "azure") {
       correctedLanguageCode = await getLanguageCodeForAzure(target_language);
@@ -123,19 +126,26 @@ const translateTextByModel = async (req, res) => {
     } else if (model === "google_v2" || model === "google_v3") {
       correctedLanguageCode = await getLanguageCodeForGoogle(target_language);
     } else {
-      correctedLanguageCode = target_language;
+      correctedLanguageCode = target_language; // For OpenAI, use the target language directly
     }
 
+    // Get the translation function from the model map
     const translateFunction = modelMap[model];
 
-    const translation = await translateFunction(text, correctedLanguageCode);
-    const satisfaction = await rateTranslation(text, source_language, translation, target_language);
+    // Translate each text in order and accumulate results
+    const translations = [];
+    for (const text of texts) {
+      const translation = await translateFunction(text, correctedLanguageCode);
+      const satisfaction = await rateTranslation(text, source_language, translation, target_language);
+      translations.push({
+        text,
+        translation,
+        satisfaction
+      });
+    }
 
-    res.json({
-      model,
-      translation,
-      satisfaction
-    });
+    // Send the response with an array of translations
+    res.json(translations);
   } catch (error) {
     console.error('Error during translation:', error.message);
     res.status(500).json({ message: 'Internal server error' });
