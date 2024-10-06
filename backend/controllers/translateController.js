@@ -87,6 +87,42 @@ const translateText = async (req, res) => {
   }
 };
 
+const translateTextByModel = async (req, res) => {
+  const modelMap = {
+    openai: openaiTranslate,
+    azure: azureTranslateText,
+    deepl: deeplTranslateText,
+    google_v2: googleTranslateTextV2,
+    google_v3: googleTranslateTextV3,
+  };
+
+  try {
+    const { model, text, source_language, target_language } = req.body;
+
+    if (!model || !text || !target_language) {
+      return res.status(400).json({ message: 'Model, text, and target_language are required fields.' });
+    }
+
+    if (!supportedModels.has(model)) {
+      return res.status(400).json({ message: 'Unsupported model specified.' });
+    }
+
+    const translateFunction = modelMap[model];
+
+    const translation = await translateFunction(text, target_language);
+    const satisfaction = await rateTranslation(text, source_language, translation, target_language);
+
+    res.json({
+      model,
+      translation
+    });
+  } catch (error) {
+    console.error('Error during translation:', error.message);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 module.exports = {
   translateText,
+  translateTextByModel
 };
