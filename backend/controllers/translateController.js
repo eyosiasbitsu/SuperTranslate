@@ -89,11 +89,11 @@ const translateText = async (req, res) => {
 
 const translateTextByModel = async (req, res) => {
   const modelMap = {
-    openai: openaiTranslate,
-    azure: azureTranslateText,
-    deepl: deeplTranslateText,
-    google_v2: googleTranslateTextV2,
-    google_v3: googleTranslateTextV3,
+    "openai": openaiTranslate,
+    "azure": azureTranslateText,
+    "deepl": deeplTranslateText,
+    "google_v2": googleTranslateTextV2,
+    "google_v3": googleTranslateTextV3,
   };
 
   try {
