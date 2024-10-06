@@ -139,8 +139,7 @@ const translateTextByModel = async (req, res) => {
       const satisfaction = await rateTranslation(text, source_language, translation, target_language);
       translations.push({
         text,
-        translation,
-        satisfaction
+        translation
       });
     }
 
