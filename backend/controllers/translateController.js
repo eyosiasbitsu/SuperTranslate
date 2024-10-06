@@ -96,6 +96,7 @@ const translateTextByModel = async (req, res) => {
     "google_v3": googleTranslateTextV3,
   };
 
+  const supportedModels = new Set(Object.keys(modelMap));
   try {
     const { model, text, source_language, target_language } = req.body;
 
