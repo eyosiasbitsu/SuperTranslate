@@ -32,7 +32,7 @@ const translateText = async (req, res) => {
       model: 'openai',
       translation: openaiTranslation,
       satisfaction: openaiSatisfaction,
-      responseTime: ((openaiEnd - openaiStart) / 1000).toFixed(2) // Convert to seconds and round to 2 decimal places
+      time: ((openaiEnd - openaiStart) / 1000).toFixed(2) // Convert to seconds and round to 2 decimal places
     });
 
     // Azure Translation
@@ -44,7 +44,7 @@ const translateText = async (req, res) => {
       model: 'azure_translator',
       translation: azureTranslation,
       satisfaction: azureSatisfaction,
-      responseTime: ((azureEnd - azureStart) / 1000).toFixed(2)
+      time: ((azureEnd - azureStart) / 1000).toFixed(2)
     });
 
     // DeepL Translation
@@ -56,7 +56,7 @@ const translateText = async (req, res) => {
       model: 'deepl',
       translation: deeplTranslation,
       satisfaction: deeplSatisfaction,
-      responseTime: ((deeplEnd - deeplStart) / 1000).toFixed(2)
+      time: ((deeplEnd - deeplStart) / 1000).toFixed(2)
     });
 
     // Google Cloud Translate v2
@@ -69,7 +69,7 @@ const translateText = async (req, res) => {
         model: 'google_translate_v2',
         translation: googleV2Translation,
         satisfaction: googleV2Satisfaction,
-        responseTime: ((googleV2End - googleV2Start) / 1000).toFixed(2)
+        time: ((googleV2End - googleV2Start) / 1000).toFixed(2)
       });
     } catch (error) {
       console.error('Error in Google Translate v2:', error.message);
@@ -77,7 +77,7 @@ const translateText = async (req, res) => {
         model: 'google_translate_v2',
         translation: 'Error in translation',
         satisfaction: 'N/A',
-        responseTime: 'N/A'
+        time: 'N/A'
       });
     }
 
@@ -91,7 +91,7 @@ const translateText = async (req, res) => {
         model: 'google_translate_v3',
         translation: googleV3Translation,
         satisfaction: googleV3Satisfaction,
-        responseTime: ((googleV3End - googleV3Start) / 1000).toFixed(2)
+        time: ((googleV3End - googleV3Start) / 1000).toFixed(2)
       });
     } catch (error) {
       console.error('Error in Google Translate v3:', error.message);
@@ -99,7 +99,7 @@ const translateText = async (req, res) => {
         model: 'google_translate_v3',
         translation: 'Error in translation',
         satisfaction: 'N/A',
-        responseTime: 'N/A'
+        time: 'N/A'
       });
     }
 
