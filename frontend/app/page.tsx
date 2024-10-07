@@ -12,7 +12,7 @@ import { useState } from 'react';
 export default function Home() {
   const { setResponseLanguage, setRequestLanguage,meaning, translations = [], inputText, requestLanguage, responseLanguage, loading } = useTranslationStore(); 
   const [selectedService, setSelectedService] = useState<string>(''); 
-
+  
   const handleTranslate = async () => {
     await translateText();  
   };
@@ -58,24 +58,42 @@ export default function Home() {
             onServiceChange= {handleLanguageChange}
           />
         </div>
-
         {/* Loading Indicator */}
-        {loading && <div className="text-lg text-blue-600">Translating...</div>}
+        {loading && <div className="text-lg text-blue-600">Translating...</div> }
 
         {/* Translations Rendering */}
         <div className="flex flex-col justify-center w-full gap-4">
-          {translations && translations.map((translation, index) => (
-            <TranslationContainer
-              key={index}
-              service={translation.model}  
-              accuracy={translation.satisfaction}
-              result={translation.translation}
-              meaning={meaning && meaning.length>index ? meaning[index]: "not reversed"} 
-            />
-          ))}
+          {loading ? (
+            
+            // Render placeholders for each translation item
+            Array.from({ length: translations?.length || 3 }).map((_, index) => (
+              
+              <TranslationContainer
+                key={index}
+                service="Model"
+                accuracy="Calculating"
+                result="Translating..."
+                meaning=""
+                time="00:00"
+                loading
+              />
+            ))
+          ) : (
+            // Render actual translations after loading is complete
+            (translations ?? []).map((translation, index) => (
+              <TranslationContainer
+                key={index}
+                service={translation.model || "Unknown"}
+                accuracy={translation.satisfaction || "Unknown"}
+                result={translation.translation || "No result"}
+                meaning={meaning && meaning.length > index ? meaning[index] : "No meaning available"}
+                time={new Date().toLocaleTimeString()}
+                loading={loading}
+              />
+            ))
+          )}
         </div>
       </main>
-
       <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center"></footer>
     </div>
   );
