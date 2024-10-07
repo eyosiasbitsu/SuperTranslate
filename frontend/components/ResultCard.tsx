@@ -1,13 +1,13 @@
-// TranslateResultCard.tsx
+// ResultCard.tsx
 import { DocumentDuplicateIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
-interface TranslateResultCardProps {
+interface ResultCardProps {
   result: string;
   className?: string;
 }
 
-const TranslateResultCard: React.FC<TranslateResultCardProps> = ({ result, className }) => {
+const ResultCard: React.FC<ResultCardProps> = ({ result, className }) => {
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = () => {
@@ -27,4 +27,4 @@ const TranslateResultCard: React.FC<TranslateResultCardProps> = ({ result, class
   );
 };
 
-export default TranslateResultCard;
+export default ResultCard;

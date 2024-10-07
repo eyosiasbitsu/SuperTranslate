@@ -4,35 +4,43 @@ type TranslationState = {
   inputText: string;
   requestLanguage: string;
   responseLanguage: string;
+  model: string;
+  meaning : string[];
   translations: Array<{
     model: string;
     translation: string;
     satisfaction: string;
   }> | null;
-  loading: boolean;  // Added loading state
+  loading: boolean; 
   setInputText: (text: string) => void;
   setRequestLanguage: (language: string) => void;
   setResponseLanguage: (language: string) => void;
+  setMeaning: (meaning: string[]) => void;
+  setModel : (model : string)=>void;
   setTranslations: (translations: Array<{
     model: string;
     translation: string;
     satisfaction: string;
   }> | null) => void;
-  setLoading: (loading: boolean) => void;  // Added setter for loading state
+  setLoading: (loading: boolean) => void;  
 };
 
 const useTranslationStore = create<TranslationState>((set) => ({
   inputText: '',
-  requestLanguage: 'English',
-  responseLanguage: 'French',
+  requestLanguage: '',
+  responseLanguage: '',
+  model: '',
+  meaning: [],
   translations: null,
-  loading: false,  // Initialize loading state to false
+  loading: false,  
   
   setInputText: (text: string) => set({ inputText: text }),
   setRequestLanguage: (language: string) => set({ requestLanguage: language }),
   setResponseLanguage: (language: string) => set({ responseLanguage: language }),
+  setModel: (model: string) => set({ model }),
+  setMeaning: (meaning: string[]) => set({ meaning }),
   setTranslations: (translations) => set({ translations }),
-  setLoading: (loading: boolean) => set({ loading }),  // Function to set loading state
+  setLoading: (loading: boolean) => set({ loading }), 
 }));
 
 export default useTranslationStore;

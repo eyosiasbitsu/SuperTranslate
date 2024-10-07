@@ -1,7 +1,7 @@
 import useTranslationStore from '../store/translateStore';
 
 export const translateText = async () => {
-  const { inputText, requestLanguage, responseLanguage, setTranslations, setLoading } = useTranslationStore.getState();
+  const { inputText, requestLanguage, responseLanguage, setTranslations, setLoading, setMeaning } = useTranslationStore.getState();
   
   console.log('Translating with the following data:');
   console.log('Input Text:', inputText);
@@ -18,7 +18,7 @@ export const translateText = async () => {
   console.log('Payload for API call:', payload);
 
   try {
-    setLoading(true);  // Start loading before the API call
+    setLoading(true);  
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -36,12 +36,69 @@ export const translateText = async () => {
       setTranslations(data);
       console.log('Translations updated in store:', data);
     } else {
-      const errorData = await response.json(); // Log error details
+      const errorData = await response.json();
       console.error('Translation failed. Status:', response.status, 'Error:', errorData);
+      throw new Error(`Translation failed: ${errorData.message || 'Unknown error'}`);
     }
   } catch (error) {
-    console.error('API call error:', error);
+    if (error instanceof Error) {
+      console.error('API call error in translateText:', error.message);
+    } else {
+      console.error('Unknown error in translateText');
+    }
   } finally {
-    setLoading(false);  // Stop loading after the API call completes
+    setLoading(false);  
+  }
+};
+
+export const reverseTranslate = async (texts:string[]) => {
+  const { requestLanguage, responseLanguage, setMeaning, model } = useTranslationStore.getState();
+
+  console.log('Reverse translating with the following data:');
+  console.log('Model:', model);
+  console.log('Request Language:', responseLanguage);
+  console.log('Response Language:', requestLanguage);
+  console.log('Texts:', texts);
+
+  const apiUrl = 'https://supertranslate.onrender.com/api/translate/bymodel';
+  const payload = {
+    model: model,
+    source_language: responseLanguage,
+    target_language: requestLanguage,
+    texts: texts,
+  };
+
+  try {
+    // Sending POST request to the API
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      console.error('Error in reverseTranslate:');
+      const errorData = await response.json();
+      throw new Error(`Error: ${response.statusText} - ${errorData.message || 'Unknown error'}`);
+    }
+
+    // Parsing the response data
+    const data = await response.json();
+    console.log('Translation response:', data);
+
+    // Extracting translations from the data
+    const meanings = data.map((item: { translation: string }) => item.translation);
+    console.log('Extracted meanings:', meanings);
+
+    // Setting the meanings
+    setMeaning(meanings);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error in reverseTranslate:', error.message);
+    } else {
+      console.error('Unknown error in reverseTranslate');
+    }
   }
 };

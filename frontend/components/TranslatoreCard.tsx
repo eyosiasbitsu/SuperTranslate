@@ -1,13 +1,13 @@
-// TranslateResponseCard.tsx
+// TranslatoreCard.tsx
 import { SparklesIcon } from '@heroicons/react/24/outline';
 
-interface TranslateResponseCardProps {
+interface TranslatoreCardProps {
   service: string;
   accuracy: string;
   className?: string;
 }
 
-const TranslateResponseCard: React.FC<TranslateResponseCardProps> = ({ service, accuracy, className }) => {
+const TranslatoreCard: React.FC<TranslatoreCardProps> = ({ service, accuracy, className }) => {
   return (
     <div className={`flex flex-col gap-2 min-w-[250px] max-w-md mx-auto p-4 border border-gray-200 bg-white rounded-lg shadow-md ${className}`}>
       <div className="flex-shrink-0">
@@ -21,4 +21,4 @@ const TranslateResponseCard: React.FC<TranslateResponseCardProps> = ({ service, 
   );
 };
 
-export default TranslateResponseCard;
+export default TranslatoreCard;

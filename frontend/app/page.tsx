@@ -1,85 +1,78 @@
 'use client';
 
 import TranslateCard from '../components/TranslateCard';
-import TranslateResponseCard from '../components/TranslateResponseCard';
-import TranslateResultCard from '../components/TranslateResultCard';
 import LanguageSelector from '../components/SelectLanguageButton';
-import { translateText } from './utils/api';
+import { translateText, reverseTranslate } from './utils/api';  // Import reverseTranslate
 import useTranslationStore from './store/translateStore';
 import { MdOutlineTranslate } from "react-icons/md";
+import TranslationContainer from '../components/Row';
+import MeaningSelector from '../components/MeaningSelectore';
+import { useState } from 'react';
 
 export default function Home() {
-  const { setResponseLanguage, translations, loading } = useTranslationStore();
+  const { setResponseLanguage, setRequestLanguage,meaning, translations = [], inputText, requestLanguage, responseLanguage, loading } = useTranslationStore(); 
+  const [selectedService, setSelectedService] = useState<string>(''); 
 
-  const handleTranslate = () => {
-    translateText();
+  const handleTranslate = async () => {
+    await translateText();  
+  };
+  
+  const handleLanguageChange = async () => {     
+    const model = getMeaningForService (selectedService)    
+    const texts = translations ? translations.map(t => t.translation) : [];   
+    
+    await reverseTranslate( texts);  
   };
 
+  // Function to get the meaning based on the selected service
+  const getMeaningForService = (service: string) => {
+    const translation = translations?.find(translation =>
+      translation.model.toLowerCase().includes(service.toLowerCase())
+    );
+    return translation ? translation.model : '';
+  };  
+
   return (
-    <div className="bg-white text-black grid grid-rows justify-items-center min-h-screen pb-20 gap-8 sm:p-10 font-[family-name:var(--font-geist-sans)]">
+    <div className="grid grid-rows text-black bg-white justify-items-center min-h-screen pb-20 gap-8 sm:p-10 font-[family-name:var(--font-geist-sans)]">
 
       <main className="flex flex-col items-center gap-4 min-h-screen justify-center overflow-y-auto top-1 w-[80%]">
-        <h1 className="text-2xl text-black font-bold">SuperTranslate</h1>
+        <h1 className="text-2xl font-bold">SuperTranslate</h1>
 
         <TranslateCard />
 
         {/* Button for Response Language */}
         <div className="flex justify-start w-full -mb-3 gap-3">
-          <LanguageSelector setLanguage={setResponseLanguage} placeHolder="Output Language" />
-          <button
-            onClick={handleTranslate}
-            className="w-32 mt-2 h-8 text-center bg-[#EEEEEE] text-base rounded-3xl hover:bg-indigo-700 transition-colors flex items-center justify-between px-4"
-          >
-            <MdOutlineTranslate />
-            Translate
-          </button>
+          <div className="flex gap-4 w-full">
+            <LanguageSelector setLanguage={setResponseLanguage} placeHolder="Output Language" />
+            <button
+              onClick={handleTranslate}
+              className="w-32 mt-2 h-8 text-center bg-[#EEEEEE] text-base rounded-3xl hover:bg-indigo-700 transition-colors flex items-center justify-between px-4"
+            >
+              <MdOutlineTranslate />
+              Translate
+            </button>
+          </div>
+          <MeaningSelector 
+            selectedService={selectedService} 
+            setSelectedService={setSelectedService} 
+            onServiceChange= {handleLanguageChange}
+          />
         </div>
 
         {/* Loading Indicator */}
         {loading && <div className="text-lg text-blue-600">Translating...</div>}
 
-        <div className="flex justify-start flex-wrap gap-6 w-full">
-          {/* First Column */}
-          <div className="flex flex-col gap-4 w-full max-w-xs">
-            <TranslateResponseCard className="w-full" service="Open Ai response" accuracy={Array.isArray(translations) && translations.length > 0? translations[0].satisfaction:""} />
-            {Array.isArray(translations) && translations.length > 0 && (
-              <TranslateResultCard className="w-full min-h-24" result={translations[0].translation} />
-            )}
-          </div>
-
-          {/* Second Column */}
-          <div className="flex flex-col gap-4 w-full max-w-xs">
-            <TranslateResponseCard className="w-full" service="Azure translator response" accuracy={Array.isArray(translations) && translations.length > 1? translations[1].satisfaction:""} />
-            {Array.isArray(translations) && translations.length > 1 && (
-              <TranslateResultCard className="w-full min-h-24" result={translations[1].translation} />
-            )}
-          </div>
-
-          {/* Third Column */}
-          <div className="flex flex-col gap-4 w-full max-w-xs">
-            <TranslateResponseCard className="w-full" service="DeepL Model" accuracy={Array.isArray(translations) && translations.length > 2? translations[2].satisfaction:""} />
-            {Array.isArray(translations) && translations.length > 2 && (
-              <TranslateResultCard className="w-full min-h-24" result={translations[2].translation} />
-            )}
-
-          </div>
-          
-          <div className="flex flex-col gap-4 w-full max-w-xs">
-            <TranslateResponseCard className="w-full" service="Google Translate V2" accuracy={Array.isArray(translations) && translations.length > 3? translations[3].satisfaction:""} />
-            {Array.isArray(translations) && translations.length > 3 && (
-              <TranslateResultCard className="w-full min-h-24" result={translations[3].translation} />
-            )}
-
-          </div>
-
-          <div className="flex flex-col gap-4 w-full max-w-xs">
-            <TranslateResponseCard className="w-full" service="Google Translate V3" accuracy={Array.isArray(translations) && translations.length > 4? translations[4].satisfaction:""} />
-            {Array.isArray(translations) && translations.length > 4 && (
-              <TranslateResultCard className="w-full min-h-24" result={translations[4].translation} />
-            )}
-
-          </div>
-          
+        {/* Translations Rendering */}
+        <div className="flex flex-col justify-center w-full gap-4">
+          {translations && translations.map((translation, index) => (
+            <TranslationContainer
+              key={index}
+              service={translation.model}  
+              accuracy={translation.satisfaction}
+              result={translation.translation}
+              meaning={meaning && meaning.length>index ? meaning[index]: "not reversed"} 
+            />
+          ))}
         </div>
       </main>
 
