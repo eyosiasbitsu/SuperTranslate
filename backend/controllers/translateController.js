@@ -1,4 +1,3 @@
-
 const { openaiTranslate } = require('../services/openaiService');
 const { azureTranslateText } = require('../services/azureTranslateService');
 const { deeplTranslateText } = require('../services/deeplService');
@@ -12,6 +11,8 @@ const {
   getLanguageCodeForGoogle 
 } = require('../utils/languageMapperService');
 
+const { performance } = require('perf_hooks');
+
 const translateText = async (req, res) => {
   try {
     const { text, source_language, target_language } = req.body;
@@ -23,69 +24,88 @@ const translateText = async (req, res) => {
     const translations = [];
 
     // OpenAI Translation
+    const openaiStart = performance.now();
     const openaiTranslation = await openaiTranslate(text, source_language, target_language);
+    const openaiEnd = performance.now();
     const openaiSatisfaction = await rateTranslation(text, source_language, openaiTranslation, target_language);
     translations.push({
       model: 'openai',
       translation: openaiTranslation,
-      satisfaction: openaiSatisfaction
+      satisfaction: openaiSatisfaction,
+      responseTime: ((openaiEnd - openaiStart) / 1000).toFixed(2) // Convert to seconds and round to 2 decimal places
     });
 
     // Azure Translation
+    const azureStart = performance.now();
     const azureTranslation = await azureTranslateText(text, target_language);
+    const azureEnd = performance.now();
     const azureSatisfaction = await rateTranslation(text, source_language, azureTranslation, target_language);
     translations.push({
       model: 'azure_translator',
       translation: azureTranslation,
-      satisfaction: azureSatisfaction
+      satisfaction: azureSatisfaction,
+      responseTime: ((azureEnd - azureStart) / 1000).toFixed(2)
     });
 
     // DeepL Translation
+    const deeplStart = performance.now();
     const deeplTranslation = await deeplTranslateText(text, target_language);
+    const deeplEnd = performance.now();
     const deeplSatisfaction = await rateTranslation(text, source_language, deeplTranslation, target_language);
     translations.push({
       model: 'deepl',
       translation: deeplTranslation,
-      satisfaction: deeplSatisfaction
+      satisfaction: deeplSatisfaction,
+      responseTime: ((deeplEnd - deeplStart) / 1000).toFixed(2)
     });
 
     // Google Cloud Translate v2
     try {
+      const googleV2Start = performance.now();
       const googleV2Translation = await googleTranslateTextV2(text, target_language);
+      const googleV2End = performance.now();
       const googleV2Satisfaction = await rateTranslation(text, source_language, googleV2Translation, target_language);
       translations.push({
         model: 'google_translate_v2',
         translation: googleV2Translation,
-        satisfaction: googleV2Satisfaction
+        satisfaction: googleV2Satisfaction,
+        responseTime: ((googleV2End - googleV2Start) / 1000).toFixed(2)
       });
     } catch (error) {
       console.error('Error in Google Translate v2:', error.message);
       translations.push({
         model: 'google_translate_v2',
         translation: 'Error in translation',
-        satisfaction: 'N/A'
+        satisfaction: 'N/A',
+        responseTime: 'N/A'
       });
     }
 
     // Google Cloud Translate v3
     try {
+      const googleV3Start = performance.now();
       const googleV3Translation = await googleTranslateTextV3(text, target_language);
+      const googleV3End = performance.now();
       const googleV3Satisfaction = await rateTranslation(text, source_language, googleV3Translation, target_language);
       translations.push({
         model: 'google_translate_v3',
         translation: googleV3Translation,
-        satisfaction: googleV3Satisfaction
+        satisfaction: googleV3Satisfaction,
+        responseTime: ((googleV3End - googleV3Start) / 1000).toFixed(2)
       });
     } catch (error) {
       console.error('Error in Google Translate v3:', error.message);
       translations.push({
         model: 'google_translate_v3',
         translation: 'Error in translation',
-        satisfaction: 'N/A'
+        satisfaction: 'N/A',
+        responseTime: 'N/A'
       });
     }
 
     // Send the response
+    console.log(translations);
+
     res.json(translations);
   } catch (error) {
     console.error('Error during translation:', error.message);
