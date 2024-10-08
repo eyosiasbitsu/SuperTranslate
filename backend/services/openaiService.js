@@ -11,10 +11,10 @@ const openai = new OpenAIApi({
   apiKey: apiKey,
 });
 
-const openaiTranslate = async (text, source_language, target_language) => {
+const openaiTranslate = async (text, target_language) => {
   try {
 
-    const prompt = `Translate the following text from ${source_language} to ${target_language}: "${text}"`;
+    const prompt = `Translate the following text to ${target_language}: "${text}"`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4",

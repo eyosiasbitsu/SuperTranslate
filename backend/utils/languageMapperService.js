@@ -22,6 +22,9 @@ const getLanguageCodeForPrompt = async (languageName, targetService) => {
       prompt = `Provide the correct language code for the language "${languageName}" that is supported by DeepL. Ensure that your response is only the capital letter language code, without any additional text or explanation.`;
     } else if (targetService === 'google') {
       prompt = `Provide the ISO 639-1 language code for the language "${languageName}". Ensure that your response is only the lowercase language code, without any additional text or explanation. This code will be used for Google Translate services.`;
+    } else if (targetService === 'openai') {
+      // For OpenAI, we don't need to get an ISO code, we just return the language name itself
+      return languageName;
     } else {
       throw new Error('Invalid target service specified.');
     }
@@ -68,8 +71,14 @@ const getLanguageCodeForGoogle = async (languageName) => {
   return await getLanguageCodeForPrompt(languageName, 'google');
 };
 
+// Function for getting language code for OpenAI
+const getLanguageCodeForOpenAI = async (languageName) => {
+  return languageName; // For OpenAI, return the language name itself
+};
+
 module.exports = {
   getLanguageCodeForAzure,
   getLanguageCodeForDeepL,
   getLanguageCodeForGoogle,
+  getLanguageCodeForOpenAI,
 };
