@@ -1,11 +1,22 @@
-
 const express = require('express');
 const router = express.Router();
-const { translateText, translateTextByModel } = require('../controllers/translateController');
+const { 
+  openaiTranslateEndpoint,
+  azureTranslateEndpoint,
+  deeplTranslateEndpoint,
+  googleTranslateV2Endpoint,
+  googleTranslateV3Endpoint,
+  modelTranslateEndpoint
+} = require('../controllers/translateController');
 
-router.post('/', translateText);
+// Individual Translation Endpoints
+router.post('/openai', openaiTranslateEndpoint);
+router.post('/azure', azureTranslateEndpoint);
+router.post('/deepl', deeplTranslateEndpoint);
+router.post('/googleV2', googleTranslateV2Endpoint);
+router.post('/googleV3', googleTranslateV3Endpoint);
 
-// by specific model
-router.post('/bymodel', translateTextByModel);
+// Model-Specific Endpoint for multiple texts
+router.post('/validate', modelTranslateEndpoint);
 
 module.exports = router;
