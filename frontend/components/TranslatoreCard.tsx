@@ -1,4 +1,5 @@
-// TranslatoreCard.tsx
+// components/TranslatoreCard.tsx
+
 import { SparklesIcon } from '@heroicons/react/24/outline';
 
 interface TranslatoreCardProps {

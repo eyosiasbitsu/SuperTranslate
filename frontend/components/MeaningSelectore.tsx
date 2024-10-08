@@ -91,7 +91,7 @@ const MeaningSelector: React.FC<MeaningSelectorProps> = ({
         options={services}
         onChange={handleChange}
         value={services.find(service => service.value === selectedService) || null} // Display the selected service as the current value
-        placeholder={selectedService ? selectedService : "Select Service"} // Placeholder changes to the selected value
+        placeholder={selectedService ? selectedService : "Select a Judge"} // Placeholder changes to the selected value
         isSearchable
         styles={customStyles}
         components={{

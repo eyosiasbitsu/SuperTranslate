@@ -1,16 +1,17 @@
+// components/ResultCard.tsx
+
 import { DocumentDuplicateIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
 interface ResultCardProps {
   result: string;
   className?: string;
-  time: string; // Assuming time is in milliseconds
+  time: string;
   loading: boolean;
 }
 
 const ResultCard: React.FC<ResultCardProps> = ({ result, className, time, loading }) => {
   const [isCopied, setIsCopied] = useState(false);
-  console.log("loading", loading);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(result);
@@ -18,15 +19,15 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, className, time, loadin
     setTimeout(() => setIsCopied(false), 2000);
   };
 
-  // Convert time from milliseconds to seconds
-  const timeInSeconds = (parseFloat(time) / 1000).toFixed(2);
+  // Convert time from seconds string to a formatted string only if it's valid
+  const timeInSeconds = !loading && time ? parseFloat(time).toFixed(2) : null;
 
   return (
     <div className={`min-w-[250px] max-w-md mx-auto p-4 pr-14 rounded-lg shadow-md relative ${className}`}>
       <div className="flex justify-between items-center">
         <div className="flex justify-center items-center mt-2">
           {loading ? (
-            // Show clock when loading
+            // Show spinner while loading
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-5 w-5 text-gray-500 animate-spin-slow"
@@ -42,12 +43,14 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, className, time, loadin
               <line x1="12" y1="12" x2="16" y2="12" stroke="currentColor" />
             </svg>
           ) : (
-            // Show time in seconds after loading is complete
-            <span className="text-xs text-gray-600">{`It took: ${timeInSeconds} seconds`}</span>
+            // Show time once translation is complete and only if time is valid
+            timeInSeconds && (
+              <span className="text-xs text-gray-600">{`This model took: ${timeInSeconds} seconds`}</span>
+            )
           )}
         </div>
 
-        {/* Copy icon and time display in the same line */}
+        {/* Copy functionality */}
         <div className="flex items-center space-x-2">
           <div
             className="cursor-pointer flex items-center space-x-1"
@@ -59,7 +62,10 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, className, time, loadin
         </div>
       </div>
 
-      <p className="text-gray-700 text-sm whitespace-pre-line pt-3 flex justify-center">{result}</p>
+      {/* Display the result */}
+      <p className="text-gray-700 text-sm whitespace-pre-line pt-3 flex justify-center">
+        {loading ? "Translating..." : result}
+      </p>
     </div>
   );
 };

@@ -5,24 +5,26 @@ type TranslationState = {
   requestLanguage: string;
   responseLanguage: string;
   model: string;
-  meaning : string[];
+  meaning: string[];
   translations: Array<{
     model: string;
     translation: string;
     satisfaction: string;
-  }> | null;
-  loading: boolean; 
+    time: string;
+  }>;
+  loading: boolean;
   setInputText: (text: string) => void;
   setRequestLanguage: (language: string) => void;
   setResponseLanguage: (language: string) => void;
   setMeaning: (meaning: string[]) => void;
-  setModel : (model : string)=>void;
+  setModel: (model: string) => void;
   setTranslations: (translations: Array<{
     model: string;
     translation: string;
     satisfaction: string;
-  }> | null) => void;
-  setLoading: (loading: boolean) => void;  
+    time: string;
+  }>) => void;
+  setLoading: (loading: boolean) => void;
 };
 
 const useTranslationStore = create<TranslationState>((set) => ({
@@ -31,8 +33,8 @@ const useTranslationStore = create<TranslationState>((set) => ({
   responseLanguage: '',
   model: '',
   meaning: [],
-  translations: null,
-  loading: false,  
+  translations: [], // Default to an empty array
+  loading: false,
   
   setInputText: (text: string) => set({ inputText: text }),
   setRequestLanguage: (language: string) => set({ requestLanguage: language }),
@@ -40,7 +42,7 @@ const useTranslationStore = create<TranslationState>((set) => ({
   setModel: (model: string) => set({ model }),
   setMeaning: (meaning: string[]) => set({ meaning }),
   setTranslations: (translations) => set({ translations }),
-  setLoading: (loading: boolean) => set({ loading }), 
+  setLoading: (loading: boolean) => set({ loading }),
 }));
 
 export default useTranslationStore;
