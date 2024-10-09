@@ -11,9 +11,9 @@ type ServiceOption = {
 // Define the available services
 const services: ServiceOption[] = [
   { value: "azure", label: "Azure" },
-  { value: "deepL", label: "DeepL" },
-  { value: "google_v2", label: "Google V2" },
-  { value: "google_v3", label: "Google V3" },
+  { value: "deepl", label: "DeepL" },
+  { value: "googleV2", label: "Google V2" },
+  { value: "googleV3", label: "Google V3" },
 ];
 
 // Custom styles for react-select

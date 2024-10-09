@@ -45,8 +45,6 @@ const ModelRow: React.FC<ModelRowProps> = ({
     handleTranslate();
   }, [originalText, originalLanguage, outputLanguage]);
 
-  console.log("translate rerender");
-
   let result = "Waiting for translation!";
   if (isLoading) {
     result = "Translating...";

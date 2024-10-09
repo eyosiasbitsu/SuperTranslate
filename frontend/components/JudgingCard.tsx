@@ -42,8 +42,6 @@ const JudgingCard: React.FC<JudgingCardProps> = ({
     setTimeout(() => setIsCopied(false), 2000);
   };
 
-  console.log("judge rerender");
-
   let result = "No result to validate!";
   if (isLoading) {
     result = "Validating...";
