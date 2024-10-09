@@ -1,17 +1,19 @@
-import { MicrophoneIcon, PaperClipIcon } from '@heroicons/react/24/outline';
-import useTranslationStore from '../app/store/translateStore';
-import LanguageSelector from './SelectLanguageButton';
+import { MicrophoneIcon, PaperClipIcon } from "@heroicons/react/24/outline";
+import LanguageSelector from "./LanguageSelector";
+import { TranslateCardProps } from "@/types/translator";
 
-const TranslateCard = () => {
-  const { inputText, setInputText, setRequestLanguage } = useTranslationStore();
-
+const TranslateCard: React.FC<TranslateCardProps> = ({
+  inputText,
+  setInputText,
+  setRequestLanguage,
+}) => {
   return (
     <div className="max-w-2xl w-full mx-auto p-2 bg-white rounded-lg shadow-lg border border-gray-200">
-      <div className="flex justify-between items-center mb-3">  
+      <div className="flex justify-between items-center mb-3">
         <div className="flex pb-3">
-          <PaperClipIcon className="h-5 w-7 text-gray-500"/>
+          <PaperClipIcon className="h-5 w-7 text-gray-500" />
           <h6> Give me something to translate</h6>
-        </div>   
+        </div>
         <MicrophoneIcon className="h-5 w-7 text-gray-500 mr-4" />
       </div>
 
@@ -26,7 +28,10 @@ const TranslateCard = () => {
       />
 
       {/* Language selector */}
-      <LanguageSelector setLanguage={setRequestLanguage} placeHolder="Source Language" />
+      <LanguageSelector
+        setLanguage={setRequestLanguage}
+        placeHolder="Source Language"
+      />
     </div>
   );
 };

@@ -1,16 +1,16 @@
-// components/ResultCard.tsx
+// components/TranslationResultCard.tsx
 
-import { DocumentDuplicateIcon } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { TranslationResultCardProps } from "@/types/translator";
+import { DocumentDuplicateIcon } from "@heroicons/react/24/outline";
+import { useState } from "react";
+import { IoMdCheckmark } from "react-icons/io";
 
-interface ResultCardProps {
-  result: string;
-  className?: string;
-  time: string;
-  loading: boolean;
-}
-
-const ResultCard: React.FC<ResultCardProps> = ({ result, className, time, loading }) => {
+const TranslationResultCard: React.FC<TranslationResultCardProps> = ({
+  result,
+  className,
+  time,
+  isLoading,
+}) => {
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = () => {
@@ -20,13 +20,15 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, className, time, loadin
   };
 
   // Convert time from seconds string to a formatted string only if it's valid
-  const timeInSeconds = !loading && time ? parseFloat(time).toFixed(2) : null;
+  const timeInSeconds = !isLoading && time ? parseFloat(time).toFixed(2) : null;
 
   return (
-    <div className={`min-w-[250px] max-w-md mx-auto p-4 pr-14 rounded-lg shadow-md relative ${className}`}>
+    <div
+      className={`min-w-[250px] max-w-md mx-auto p-4 rounded-lg shadow-md relative ${className} bg-gray-300 opacity-90`}
+    >
       <div className="flex justify-between items-center">
         <div className="flex justify-center items-center mt-2">
-          {loading ? (
+          {isLoading ? (
             // Show spinner while loading
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -56,18 +58,25 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, className, time, loadin
             className="cursor-pointer flex items-center space-x-1"
             onClick={handleCopy}
           >
-            <DocumentDuplicateIcon className="h-5 w-5 text-gray-500 hover:text-gray-700" />
-            <span className="text-xs text-gray-500">{isCopied ? 'Copied!' : 'Copy'}</span>
+            {isCopied && (
+              <IoMdCheckmark className="h-5 w-5 text-gray-500 hover:text-gray-700" />
+            )}
+            {!isCopied && (
+              <DocumentDuplicateIcon className="h-5 w-5 text-gray-500 hover:text-gray-700" />
+            )}{" "}
+            <span className="text-xs text-gray-500">
+              {isCopied ? "Copied!" : "Copy"}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Display the result */}
       <p className="text-gray-700 text-sm whitespace-pre-line pt-3 flex justify-center">
-        {loading ? "Translating..." : result}
+        {result}
       </p>
     </div>
   );
 };
 
-export default ResultCard;
+export default TranslationResultCard;

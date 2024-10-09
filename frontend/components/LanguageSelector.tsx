@@ -1,6 +1,7 @@
 import React from 'react';
 import Select, { SingleValue, StylesConfig } from 'react-select';
 import localeCodes from 'locale-codes';
+import { LanguageSelectorProps } from '@/types/translator';
 
 // Define the type for the language option
 type LanguageOption = {
@@ -10,6 +11,7 @@ type LanguageOption = {
 
 // Function to get all languages in the required format
 const getAllLanguages = (): LanguageOption[] => {
+  
   return localeCodes.all.map((language) => ({
     value: language.name,
     label: language.name,
@@ -31,7 +33,7 @@ const customStyles: StylesConfig<LanguageOption, false> = {
   }),
   placeholder: (provided) => ({
     ...provided,
-    color: '#fff',
+    color: '#000',
     fontSize: '10px', // Placeholder text color
   }),
   singleValue: (provided) => ({
@@ -58,18 +60,28 @@ const customStyles: StylesConfig<LanguageOption, false> = {
 };
 
 // Language Selector component
-interface LanguageSelectorProps {
-  setLanguage: (language: string) => void;
-  placeHolder: string;
+
+function removeDuplicates(array: { label: string; value: string }[]): { label: string; value: string }[] {
+  const seen = new Set<string>();
+  return array.filter((obj) => {
+    const key = `${obj.label}-${obj.value}`;
+    if (seen.has(key)) {
+      return false; // Duplicate found, exclude from the new array
+    } else {
+      seen.add(key); // Not a duplicate, add the key to the set
+      return true;   // Include in the new array
+    }
+  });
 }
 
 const LanguageSelector: React.FC<LanguageSelectorProps> = ({ setLanguage, placeHolder }) => {
-  const allLanguages = getAllLanguages();
+  const allLanguages = removeDuplicates(getAllLanguages());
+  
+  
 
   // Handle change event when a language is selected
   const handleChange = (selectedOption: SingleValue<LanguageOption>) => {
     if (selectedOption) {
-      console.log('Selected source language:', selectedOption);
       setLanguage(selectedOption.value);
     }
   };

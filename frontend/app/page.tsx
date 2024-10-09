@@ -1,113 +1,172 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import TranslateCard from '../components/TranslateCard';
-import LanguageSelector from '../components/SelectLanguageButton';
-import { translateText, reverseTranslate } from './utils/api';
-import useTranslationStore from './store/translateStore';
+import React, { useState } from "react";
+import TranslateCard from "../components/TranslateCard";
+import LanguageSelector from "../components/LanguageSelector";
 import { MdOutlineTranslate } from "react-icons/md";
-import ResultCard from '../components/ResultCard';
-import MeaningSelector from '../components/MeaningSelectore';
-import TranslatoreCard from '../components/TranslatoreCard';
-import MeaningCard from '../components/Meaning';
+import JudgeSelector from "../components/JudgeSelector";
+import ModelRow from "@/components/ModelRow";
+import { GrValidate } from "react-icons/gr";
+import bgImage from '@/public/images/super-translator-bg.svg';
+import Image from "next/image";
 
 // Define your models
 const models = [
-  { model: 'openai', label: 'OpenAI' },
-  { model: 'azure_translator', label: 'Azure Translator' },
-  { model: 'deepl', label: 'DeepL' },
-  { model: 'google_translate_v2', label: 'Google V2' },
-  { model: 'google_translate_v3', label: 'Google V3' },
+  { model: "openai", label: "OpenAI" },
+  { model: "azure", label: "Azure Translator" },
+  { model: "deepl", label: "DeepL" },
+  { model: "googleV2", label: "Google V2" },
+  { model: "googleV3", label: "Google V3" },
 ];
 
 export default function Home() {
-  const { setResponseLanguage, setRequestLanguage, meaning, translations = [], loading, setLoading, setTranslations } = useTranslationStore(); 
-  const [selectedService, setSelectedService] = useState<string>(''); 
-  const [hasTranslated, setHasTranslated] = useState<boolean>(false); // Track if translate button is clicked
+  const [selectedJudge, setSelectedJudge] = useState<string>("");
+  const [inputText, setInputText] = useState("");
+  const [originalText, setOriginalText] = useState("");
+  const [requestLanguage, setRequestLanguage] = useState("");
+  const [responseLanguage, setResponseLanguage] = useState("");
+  const [errors, setErrors] = useState({
+    inputText: "",
+    sourceLanguage: "",
+    targetLanguage: "",
+  });
+  const [judgeResult, setJudgeResult] = useState<boolean>(false); // Track if translate button is clicked
 
-  const handleTranslate = async () => {
-    // Reset state on each click
-    setHasTranslated(true);
-    setLoading(true);
-    setTranslations([]); // Clear previous translations before making a new request
-    
-    await translateText();  
-    setLoading(false);
+  const validateForm = () => {
+    let valid = true;
+    const newErrors = { ...errors };
+    if (inputText.trim().length === 0) {
+      newErrors.inputText = "Please enter text to translate!";
+      valid = false;
+    } else {
+      newErrors.inputText = "";
+    }
+    if (requestLanguage.trim().length === 0) {
+      newErrors.sourceLanguage = "Please choose source language!";
+      valid = false;
+    } else {
+      newErrors.sourceLanguage = "";
+    }
+    if (responseLanguage.trim().length === 0) {
+      newErrors.targetLanguage = "Please choose output language!";
+      valid = false;
+    } else {
+      newErrors.targetLanguage = "";
+    }
+    setErrors(newErrors);
+    return valid;
   };
-  
-  const handleLanguageChange = async () => {     
-    const texts = translations ? translations.map(t => t.translation) : [];   
-    await reverseTranslate(texts);  
+
+  const handleTranslate = () => {
+    // Reset state on each click
+    // setHasTranslated(true);
+    // setLoading(true);
+    // setTranslations([]); // Clear previous translations before making a new request
+
+    // await translateText();
+    // setLoading(false);
+    if (validateForm()) {
+      setOriginalText(inputText);
+    }
+  };
+
+  const handleJudge = () => {
+    setJudgeResult(!judgeResult);
   };
 
   return (
-    <div className="grid grid-rows text-black bg-white justify-items-center min-h-screen pb-20 gap-8 sm:p-10 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col items-center gap-4 min-h-screen justify-center overflow-y-auto top-1 w-[80%]">
-        <h1 className="text-2xl font-bold">SuperTranslate</h1>
+    <div className="relative min-h-screen">
+      {/* Background Image */}
+      <div className="fixed inset-0 z-0">
+        <Image
+          src={bgImage} // Update with your image path
+          alt="Background"
+          layout="fill"
+          objectFit="cover"
+          quality={100}
+        />
+        {/* Optional Dark Overlay */}
+        <div className="absolute inset-0 bg-black opacity-50"></div>
+      </div>
 
-        <TranslateCard />
-
-        {/* Language and Service Selectors */}
-        <div className="flex justify-start w-full -mb-3 gap-3">
-          <div className="flex gap-4 w-full">
-            <LanguageSelector setLanguage={setResponseLanguage} placeHolder="Output Language" />
-            <button
-              onClick={handleTranslate}
-              className="w-32 mt-2 h-8 text-center bg-[#EEEEEE] text-base rounded-3xl hover:bg-indigo-700 transition-colors flex items-center justify-between px-4"
-            >
-              <MdOutlineTranslate />
-              Translate
-            </button>
-          </div>
-          <MeaningSelector 
-            selectedService={selectedService} 
-            setSelectedService={setSelectedService} 
-            onServiceChange={handleLanguageChange}
-          />
-        </div>
-
-        {/* Translations Rendering */}
-        <div className="flex flex-col justify-center w-full gap-4">
-          {models.map((modelObj, index) => {
-            // Find the translation data for the current model
-            const translationData = translations?.find((translation) => translation.model === modelObj.model);
-
-            // Determine accuracy and result based on loading and data availability
-            const accuracy = translationData ? translationData.satisfaction : 'Calculating';
-            const result = translationData ? translationData.translation : 'Translating...';
-            const time = translationData ? translationData.time : '00:00';
-            const meaningText = meaning && meaning.length > index ? meaning[index] : "Please select a judge";
-
-            // Display default state before translation
-            if (!hasTranslated) {
-              return (
-                <div key={index} className="flex flex-row gap-4 flex-wrap w-full items-center">
-                  {/* Display Model Details */}
-                  <TranslatoreCard className="flex-1 min-w-[150px]" service={modelObj.label} accuracy="Waiting for translation..." />
-                  {/* Display empty result and meaning cards */}
-                  <ResultCard className="flex-1 min-w-[150px] min-h-24" result="" time="" loading={false} />
-                  <MeaningCard className="flex-1 min-w-[150px] min-h-24" Meaning="" />
-                </div>
-              );
-            }
-
-            // Display loading or translation data once translation has started
-            return (
-              <div key={index} className="flex flex-row gap-4 flex-wrap w-full items-center">
-                {/* Display Model Details */}
-                <TranslatoreCard className="flex-1 min-w-[150px]" service={modelObj.label} accuracy={accuracy} />
-
-                {/* Display Result Card */}
-                <ResultCard className="flex-1 min-w-[150px] min-h-24" result={result} time={time} loading={loading && !translationData} />
-                
-                {/* Display Meaning Card */}
-                <MeaningCard className="flex-1 min-w-[150px] min-h-24" Meaning={meaningText} />
+      {/* Main Content */}
+      <div className="relative z-10 overflow-y-auto min-h-screen">
+        <div className="grid grid-rows text-black justify-items-center min-h-screen pb-20 gap-8 sm:p-10 font-[family-name:var(--font-geist-sans)]">
+          <main className="flex flex-col items-center gap-4 min-h-screen justify-center w-[80%]">
+            <h1 className="text-2xl font-bold text-white">SuperTranslate</h1>
+            {errors.inputText && (
+              <div className="flex justify-start w-full">
+                <p className="text-red-500">{errors.inputText}</p>
               </div>
-            );
-          })}
+            )}
+            <TranslateCard
+              inputText={inputText}
+              setInputText={setInputText}
+              setRequestLanguage={setRequestLanguage}
+            />
+            {errors.sourceLanguage && (
+              <div className="flex justify-start w-full">
+                <p className="text-red-500">{errors.sourceLanguage}</p>
+              </div>
+            )}
+
+            {/* Language and Service Selectors */}
+            <div className="flex justify-start w-full my-4 gap-3">
+              <div className="flex items-center gap-4 w-full">
+                <LanguageSelector
+                  setLanguage={setResponseLanguage}
+                  placeHolder="Output Language"
+                />
+                <button
+                  onClick={handleTranslate}
+                  className="px-12 py-2 text-center bg-[#EEEEEE] text-base rounded-2xl hover:bg-[#B0ACAC] transition-colors flex items-center justify-between"
+                >
+                  <MdOutlineTranslate />
+                  <span className="ml-2">Translate</span>
+                </button>
+              </div>
+              <div className="flex gap-4">
+                <JudgeSelector
+                  selectedJudge={selectedJudge}
+                  setSelectedJudge={setSelectedJudge}
+                />
+                <button
+                  onClick={handleJudge}
+                  className="px-12 py-2 text-center bg-[#EEEEEE] text-base rounded-2xl hover:bg-[#B0ACAC] disabled:hover:bg-[#EEEEEE] transition-colors flex items-center justify-between"
+                  disabled={selectedJudge === ""}
+                >
+                  <GrValidate />
+                  <span className="ml-2">Validate</span>
+                </button>
+              </div>
+            </div>
+            {errors.targetLanguage && (
+              <div className="flex justify-start w-full">
+                <p className="text-red-500">{errors.targetLanguage}</p>
+              </div>
+            )}
+
+            {/* Translations Rendering */}
+            <div className="flex flex-col justify-center w-full gap-4">
+              {models.map((model, idx) => (
+                <ModelRow
+                  key={idx}
+                  originalText={originalText}
+                  originalLanguage={requestLanguage}
+                  outputLanguage={responseLanguage}
+                  judgeResult={judgeResult}
+                  judgeModel={selectedJudge}
+                  modelLabel={model.label}
+                  modelValue={model.model}
+                  setOriginalText={setOriginalText}
+                />
+              ))}
+            </div>
+          </main>
+          <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center"></footer>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center"></footer>
+      </div>
     </div>
+  
   );
 }
