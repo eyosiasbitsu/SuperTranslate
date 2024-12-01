@@ -16,6 +16,7 @@ const ModelRow: React.FC<ModelRowProps> = ({
   judgeResult,
   judgeModel,
   setOriginalText,
+  imageUrl
 }) => {
   const [translationResult, setTranslationResult] = useState("");
   const [time, setTime] = useState("");
@@ -25,9 +26,22 @@ const ModelRow: React.FC<ModelRowProps> = ({
     useTranslateTextMutation();
 
   const handleTranslate = async () => {
+    if (imageUrl){
 
+      const res = await translateText({
+        model: modelValue,
+        text: originalText,
+        sourceLanguage: originalLanguage,
+        targetLanguage: outputLanguage,
+      });
+      setTranslationResult(res.data?.translation as string);
+      setTime(res.data?.time as string);
+      setSatisfaction(res.data?.satisfaction);
+      setOriginalText("");
 
-    if (originalText && originalLanguage && outputLanguage) {
+    }
+
+    else if (originalText && originalLanguage && outputLanguage) {
       const res = await translateText({
         model: modelValue,
         text: originalText,
@@ -57,6 +71,7 @@ const ModelRow: React.FC<ModelRowProps> = ({
   return (
     <div className="flex flex-row gap-4 flex-wrap w-full items-center">
       {/* Display Model Details */}
+      <div className="w-1/3 ">
       <ModelCard
         className="flex-1 min-w-[150px]"
         modelName={modelLabel}
@@ -68,17 +83,45 @@ const ModelRow: React.FC<ModelRowProps> = ({
             : "Waiting for translation"
         }
       />
+      </div>
+      
 
       {/* Display Result Card */}
-      <TranslationResultCard
+      {!imageUrl && (
+        <TranslationResultCard
         className="flex-1 min-w-[150px] min-h-24"
         result={result}
         time={time}
         isLoading={isLoading} //{loading && !translationData}
       />
 
+      )}
+      {imageUrl && (
+        <div className="w-1/2 mx-auto mt-6 p-4 bg-white rounded-lg shadow-lg border border-gray-200">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Translation Output</h2>
+      
+        {/* Output content */}
+        <div className="bg-gray-50 p-4 rounded-md shadow-sm border border-gray-200">
+          <p className="text-lg text-gray-700">
+            {/* Translation result will go here */}
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non libero eget magna fermentum ultrices ac in enim.
+          </p>
+        </div>
+      
+        {/* Action buttons */}
+        <div className="flex justify-end space-x-4 mt-4">
+          <button className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 transition duration-200">
+            Download
+          </button>
+        </div>
+      </div>
+      
+      )}
+      
+
       {/* Display Meaning Card */}
-      <JudgingCard
+      {!imageUrl && (
+        <JudgingCard
         className="flex-1 min-w-[150px] min-h-24"
         judgeText={judgeResult}
         judgeModel={judgeModel}
@@ -86,6 +129,9 @@ const ModelRow: React.FC<ModelRowProps> = ({
         targetLanguage={outputLanguage}
         text={translationResult}
       />
+
+      )}
+      
     </div>
   );
 };

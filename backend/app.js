@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const translateRoutes = require('./routes/translateRoutes');
 const cors = require('cors');
 
+const {uploader} = require('./scripts/fileUploader');
+
 const app = express();
 
 app.use(cors({ origin: '*' }));
@@ -21,4 +23,5 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  // uploader();
 });

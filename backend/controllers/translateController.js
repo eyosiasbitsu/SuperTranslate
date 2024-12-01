@@ -4,17 +4,16 @@ const { deeplTranslateText } = require('../services/deeplService');
 const { googleTranslateTextV2 } = require('../services/googleTranslateV2Service');
 const { googleTranslateTextV3 } = require('../services/googleTranslateV3Service');
 const { rateTranslation } = require('../utils/accuracyCalculator');
-
-const { 
-  getLanguageCodeForAzure, 
-  getLanguageCodeForDeepL, 
-  getLanguageCodeForGoogle,
-  getLanguageCodeForOpenAI
-} = require('../utils/languageMapperService');
-
+const { getLanguageCodeForAzure, getLanguageCodeForDeepL, getLanguageCodeForGoogle, getLanguageCodeForOpenAI } = require('../utils/languageMapperService');
 const { performance } = require('perf_hooks');
 
-// Unified Translation Endpoint
+const { downloadFileFromCloudinary } = require('../utils/cloudinaryDownloader');
+const { splitPdfIntoPages, splitDocxIntoPages } = require('../utils/documentSplitter');
+const uploadToCloudinary = require('../utils/cloudinaryUploader');
+const fs = require('fs').promises;
+const { PDFDocument, rgb } = require('pdf-lib');
+
+// Unified Translation Endpoint for text
 const unifiedTranslateEndpoint = async (req, res) => {
   const modelMap = {
     openai: openaiTranslate,
@@ -39,14 +38,18 @@ const unifiedTranslateEndpoint = async (req, res) => {
 
     // Correct language code
     let correctedLanguageCode;
-    if (model === 'azure') {
-      correctedLanguageCode = await getLanguageCodeForAzure(targetLanguage);
-    } else if (model === 'deepl') {
-      correctedLanguageCode = await getLanguageCodeForDeepL(targetLanguage);
-    } else if (model === 'googleV2' || model === 'googleV3') {
-      correctedLanguageCode = await getLanguageCodeForGoogle(targetLanguage);
-    } else if (model === 'openai') {
-      correctedLanguageCode = await getLanguageCodeForOpenAI(targetLanguage);
+    try {
+      if (model === 'azure') {
+        correctedLanguageCode = await getLanguageCodeForAzure(targetLanguage);
+      } else if (model === 'deepl') {
+        correctedLanguageCode = await getLanguageCodeForDeepL(targetLanguage);
+      } else if (model === 'googleV2' || model === 'googleV3') {
+        correctedLanguageCode = await getLanguageCodeForGoogle(targetLanguage);
+      } else if (model === 'openai') {
+        correctedLanguageCode = await getLanguageCodeForOpenAI(targetLanguage);
+      }
+    } catch (error) {
+      return res.status(400).json({ message: `Error getting language code: ${error.message}` });
     }
 
     // Get the translation function from the model map
@@ -54,11 +57,22 @@ const unifiedTranslateEndpoint = async (req, res) => {
 
     // Measure time and translate
     const start = performance.now();
-    const translation = await translateFunction(text, correctedLanguageCode);
+    let translation;
+    try {
+      translation = await translateFunction(text, correctedLanguageCode);
+    } catch (error) {
+      return res.status(500).json({ message: `Translation error: ${error.message}` });
+    }
     const end = performance.now();
 
     // Calculate satisfaction
-    const satisfaction = await rateTranslation(text, sourceLanguage, translation, targetLanguage);
+    let satisfaction;
+    try {
+      satisfaction = await rateTranslation(text, sourceLanguage, translation, targetLanguage);
+    } catch (error) {
+      console.error('Error calculating satisfaction:', error.message);
+      satisfaction = 'N/A';
+    }
 
     // Send the response
     res.json({
@@ -73,6 +87,85 @@ const unifiedTranslateEndpoint = async (req, res) => {
   }
 };
 
+// Translate PDF or DOCX File
+const translateDocument = async (req, res) => {
+  try {
+    const { cloudinaryUrl, sourceLanguage, destinationLanguage } = req.body;
+    const fileType = cloudinaryUrl.endsWith('.pdf') ? 'pdf' : 'docx';
+
+    // Step 1: Download the file
+    let downloadedFilePath;
+    try {
+      downloadedFilePath = await downloadFileFromCloudinary(cloudinaryUrl, fileType);
+    } catch (error) {
+      return res.status(500).json({ message: `Error downloading file: ${error.message}` });
+    }
+
+    // Step 2: Split the document into pages
+    let pagesText;
+    try {
+      if (fileType === 'pdf') {
+        pagesText = await splitPdfIntoPages(downloadedFilePath);
+      } else {
+        pagesText = await splitDocxIntoPages(downloadedFilePath);
+      }
+    } catch (error) {
+      return res.status(500).json({ message: `Error splitting document: ${error.message}` });
+    }
+
+    // Step 3: Translate each page
+    const translatedPages = [];
+    for (const page of pagesText) {
+      try {
+        const translatedPage = await openaiTranslate(page, sourceLanguage, destinationLanguage);
+        translatedPages.push(translatedPage);
+      } catch (error) {
+        return res.status(500).json({ message: `Error translating page: ${error.message}` });
+      }
+    }
+
+    // Step 4: Create a PDF with the translated text
+    let pdfBytes;
+    try {
+      const pdfDoc = await PDFDocument.create();
+      for (const translatedPage of translatedPages) {
+        const page = pdfDoc.addPage();
+        page.drawText(translatedPage, {
+          x: 50,
+          y: 750,
+          size: 12,
+          color: rgb(0, 0, 0),
+        });
+      }
+      pdfBytes = await pdfDoc.save();
+    } catch (error) {
+      return res.status(500).json({ message: `Error creating PDF: ${error.message}` });
+    }
+
+    const translatedPdfPath = `./downloads/translated_${Date.now()}.pdf`;
+    try {
+      await fs.writeFile(translatedPdfPath, pdfBytes);
+    } catch (error) {
+      return res.status(500).json({ message: `Error saving PDF: ${error.message}` });
+    }
+
+    // Step 5: Upload translated PDF to Cloudinary
+    let uploadedUrl;
+    try {
+      uploadedUrl = await uploadToCloudinary(translatedPdfPath);
+    } catch (error) {
+      return res.status(500).json({ message: `Error uploading to Cloudinary: ${error.message}` });
+    }
+
+    // Step 6: Return Cloudinary URL
+    return res.json({ success: true, cloudinaryUrl: uploadedUrl });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
-  unifiedTranslateEndpoint
+  unifiedTranslateEndpoint,
+  translateDocument
 };

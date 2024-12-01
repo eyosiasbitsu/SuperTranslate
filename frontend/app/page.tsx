@@ -8,6 +8,7 @@ import JudgeSelector from "../components/JudgeSelector";
 import ModelRow from "@/components/ModelRow";
 import { GrValidate } from "react-icons/gr";
 import bgImage from '@/public/images/super-translator-bg.svg';
+import bg from '@/public/images/bgimage2.jpg'
 import Image from "next/image";
 
 // Define your models
@@ -30,11 +31,13 @@ export default function Home() {
     sourceLanguage: "",
     targetLanguage: "",
   });
+  const [imageUrl, setImageUrl] = useState<string>('');
   const [judgeResult, setJudgeResult] = useState<boolean>(false); // Track if translate button is clicked
 
   const validateForm = () => {
     let valid = true;
     const newErrors = { ...errors };
+    if (!imageUrl){
     if (inputText.trim().length === 0) {
       newErrors.inputText = "Please enter text to translate!";
       valid = false;
@@ -54,6 +57,7 @@ export default function Home() {
       newErrors.targetLanguage = "";
     }
     setErrors(newErrors);
+  }
     return valid;
   };
 
@@ -79,11 +83,12 @@ export default function Home() {
       {/* Background Image */}
       <div className="fixed inset-0 z-0">
         <Image
-          src={bgImage} // Update with your image path
+          src={bg} // Update with your image path
           alt="Background"
           layout="fill"
-          objectFit="cover"
+          objectFit="contain"
           quality={100}
+          className="w-full scale-125"
         />
         {/* Optional Dark Overlay */}
         <div className="absolute inset-0 bg-black opacity-50"></div>
@@ -103,6 +108,8 @@ export default function Home() {
               inputText={inputText}
               setInputText={setInputText}
               setRequestLanguage={setRequestLanguage}
+              imageUrl = {imageUrl}
+              setImageUrl = {setImageUrl}
             />
             {errors.sourceLanguage && (
               <div className="flex justify-start w-full">
@@ -125,7 +132,8 @@ export default function Home() {
                   <span className="ml-2">Translate</span>
                 </button>
               </div>
-              <div className="flex gap-4">
+              {!imageUrl && (
+                <div className="flex gap-4">
                 <JudgeSelector
                   selectedJudge={selectedJudge}
                   setSelectedJudge={setSelectedJudge}
@@ -139,6 +147,9 @@ export default function Home() {
                   <span className="ml-2">Validate</span>
                 </button>
               </div>
+
+              )}
+              
             </div>
             {errors.targetLanguage && (
               <div className="flex justify-start w-full">
@@ -147,7 +158,8 @@ export default function Home() {
             )}
 
             {/* Translations Rendering */}
-            <div className="flex flex-col justify-center w-full gap-4">
+            {!imageUrl && (
+              <div className="flex flex-col justify-center w-full gap-4">
               {models.map((model, idx) => (
                 <ModelRow
                   key={idx}
@@ -162,6 +174,27 @@ export default function Home() {
                 />
               ))}
             </div>
+            )}
+
+            {imageUrl && (
+              <div className="flex flex-col justify-center w-full gap-4">
+              
+                <ModelRow
+                  key={1}
+                  originalText={originalText}
+                  originalLanguage={requestLanguage}
+                  outputLanguage={responseLanguage}
+                  judgeResult={judgeResult}
+                  judgeModel={selectedJudge}
+                  modelLabel={models[0].label}
+                  modelValue={models[0].model}
+                  setOriginalText={setOriginalText}
+                  imageUrl = {imageUrl}
+                />
+              
+            </div>
+            )}
+            
           </main>
           <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center"></footer>
         </div>

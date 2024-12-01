@@ -15,6 +15,8 @@ export type TranslateCardProps = {
   inputText: string;
   setInputText: React.Dispatch<React.SetStateAction<string>>;
   setRequestLanguage: React.Dispatch<React.SetStateAction<string>>;
+  imageUrl: string ;
+  setImageUrl: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export type ModelRowProps = {
@@ -26,6 +28,7 @@ export type ModelRowProps = {
   judgeResult: boolean,
   judgeModel: string,
   setOriginalText: React.Dispatch<React.SetStateAction<string>>;
+  imageUrl?: string; 
 };
 
 export type JudgingCardProps = {

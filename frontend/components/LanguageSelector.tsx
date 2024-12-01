@@ -87,16 +87,18 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ setLanguage, placeH
   };
 
   return (
-    <div className="w-[150px]">
+    <div className="w-[150px] mr-5">
       <Select
         options={allLanguages}
         onChange={handleChange}
         placeholder={placeHolder}
         isSearchable
-        styles={customStyles} // Apply custom styles
+        // styles={customStyles} // Apply custom styles
         components={{
           IndicatorSeparator: () => null,
         }}
+        className='bg-[#1A86C6] w-44 text-sm '
+        
       />
     </div>
   );
